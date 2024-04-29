@@ -1,33 +1,68 @@
+import { UseEmblaCarouselType } from 'embla-carousel-react';
 import { create } from 'zustand';
 
-type CommentStore = {
-  open: boolean;
+type EmblaCarouselType = UseEmblaCarouselType[1];
+
+type InstaGalleryStore = {
+  isOpen: boolean;
+  // embla
+  emblaApi?: EmblaCarouselType;
   sliderIndex: number;
-  openImage: (index: number) => void;
-  setSliderIndex: (sliderIndex: number) => void;
-  closeHandler: () => void;
+  canScrollPrev: boolean;
+  canScrollNext: boolean;
+  //
+  open: (index: number) => void;
+  close: () => void;
+  initEmblaApi: (emblaApi: EmblaCarouselType) => void;
+  next: () => void;
+  prev: () => void;
 };
 
-export const useInstaGalleryStore = create<CommentStore>((set) => ({
-  open: false,
+export const useInstaGalleryStore = create<InstaGalleryStore>((set, get) => ({
+  isOpen: false,
   sliderIndex: 0,
-  openImage: (index) => {
+  canScrollPrev: false,
+  canScrollNext: false,
+  open: (index) => {
+    const { emblaApi } = get();
+
+    emblaApi?.scrollTo(index);
+    console.log(index);
     set((state) => ({
       ...state,
-      open: true,
+      isOpen: true,
       sliderIndex: index,
     }));
   },
-  setSliderIndex: (sliderIndex) => {
+  close: () => {
     set((state) => ({
       ...state,
-      sliderIndex,
+      isOpen: false,
     }));
   },
-  closeHandler: () => {
+  initEmblaApi: (emblaApi) => {
+    if (!emblaApi) return;
+
+    emblaApi.on('select', (api) => {
+      set((state) => ({
+        ...state,
+        sliderIndex: api.selectedScrollSnap() + 1,
+        canScrollNext: api.canScrollNext(),
+        canScrollPrev: api.canScrollPrev(),
+      }));
+    });
+
     set((state) => ({
       ...state,
-      open: false,
+      emblaApi,
+      canScrollNext: emblaApi.canScrollNext(),
+      canScrollPrev: emblaApi.canScrollPrev(),
     }));
+  },
+  next: () => {
+    get().emblaApi?.scrollNext();
+  },
+  prev: () => {
+    get().emblaApi?.scrollPrev();
   },
 }));

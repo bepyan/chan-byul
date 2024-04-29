@@ -15,7 +15,7 @@ const SLICE_SIZE = 9;
 export default function InstaGallery({ images }: { images: string[] }) {
   const [sliceIndex, setSliceIndex] = useState(1);
 
-  const openImage = useInstaGalleryStore((state) => state.openImage);
+  const openImage = useInstaGalleryStore((state) => state.open);
 
   useEffect(() => {
     const loadImage = (url: string) => {
